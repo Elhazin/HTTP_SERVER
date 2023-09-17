@@ -1,178 +1,11 @@
-#include <iostream>
-#include <unistd.h>
-#include <fcntl.h>
-#include <netinet/in.h>
-#include <sys/socket.h>
-#include <cstring>
-#include <sys/stat.h> 
-#include <sys/types.h>
-#include <cstdlib>
-#include <fstream>
-#include <iostream>
-#include <vector>
-#include <string>
-#include <map>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sstream>
-#include <signal.h>
-#include <sys/types.h>
-#include <dirent.h>
-#include <libgen.h>
-#include <map>
-#include <netinet/tcp.h> 
 #include "/nfs/homes/abouzanb/Desktop/workingnow/methods/get.hpp"
 #define P 8080
  
-
-
-
-
-void method_get::set_error_403()
-{
-	this->file = new std::ifstream(path.c_str(),  std::ios::binary);
-	std::stringstream ss ;
-	std::string ext;
-	ext = extansion_handling["403"];
-	ss << this->size;
-	ext += ss.str();
-	ext += "\r\n";
-	ext += "\r\n";
-	this->infa.buffer_to_send = ext;
-	this->infa.status = 1;
-	infa.file = file;
-}
-
-
-void method_get::file_handling()
-{
-	this->file = new std::ifstream(path.c_str());
-	std::stringstream ss ;
-	std::string ext;
-	size_t i = path.find_last_of(".");
-	if (i == std::string::npos)
-		ext = ".html";
-	ext =  path.substr(i, path.size());
-	std::string extansion =  extansion_handling[ext];
-	ss << this->size;
-	extansion += ss.str();
-	extansion += "\r\n";
-	extansion += "\r\n";
-	this->infa.buffer_to_send = extansion;
-	this->infa.status = 1;
-	infa.file = file;
-}
-
-void method_get::set_error_404()
-{
-	struct stat st;
-	this->file = new std::ifstream(path.c_str(),  std::ios::binary);
-	stat(path.c_str() , &st);
-	this->size = st.st_size;
-	infa.size = st.st_size;
-	std::stringstream ss ;
-	std::string ext;
-	ext = extansion_handling["404"];
-	ss << this->size;
-	ext += ss.str();
-	ext += "\r\n";
-	ext += "\r\n";
-	this->infa.buffer_to_send = ext;
-	this->infa.status = 1;
-	infa.file = file;
-}
-
-// CRETAE THE FILE THAT WOULD CONTAING THE INDEIND OF THE FILE 
-void method_get::send_indexing(DIR *dir)
-{
-	
-	struct dirent *dp;
-	std::ofstream  fill("/nfs/homes/abouzanb/Desktop/workingnow/indexing.html");
-    if (!fill.is_open())   
-    {
-        std::cout << "Error opening file";
-        exit(1);
-    }
-
-	fill << "<html>\n<head>\n<title>Index of /</title>\n</head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre>\n";
-
-	while ((dp = readdir(dir)) != NULL)
-	{
-		fill << "<a href=\"" << dp->d_name << "\">" << dp->d_name << "</a>\n";
-	}
-
-	this->path = "/nfs/homes/abouzanb/Desktop/workingnow/indexing.html";
-
-	fill << "</pre><hr>\n</body>\n</html>\n";
-
-	closedir(dir);
-	fill.close();
-	file_handling();
-}
-
-// HANDLE AUTO INDEX : READING DIR AND SETTING IT IN A FILE 
-void method_get::handle_auto_index()
-{
-	DIR *dir;
-	if ((dir = opendir(path.c_str())) == NULL)
-	{
-		this->path = route + "/Desktop/webserver/webserve/forbi.html";
-		set_error_404();
-	}
-	else
-		send_indexing(dir);
-}
-
-
-void method_get::get_path(std::string r)
-{
-	this->path = r;
-}
-
-
-// this function will check is there any auto index or index in the location
-void method_get::folder_handling()
-{
-	struct stat st;
-	size_t i = 0;	
-	while (i < this->index.size())
-	{
-		std::string temp = path;
-		temp += index[i];
-		if (stat(temp.c_str() , &st) == 0)
-		{
-			this->size = st.st_size;
-			infa.size = st.st_size;
-			this->path = temp;
-			file_handling();
-			return ;
-		}
-		i++;
-	}
-
-
-	if (this->auto_index == true)
-	{
-		handle_auto_index();
-	
-	}else
-	{
-		std::cout << "Iam here in the folder handling 2" << std::endl;
-		this->path = "/nfs/homes/abouzanb/Desktop/webserver/webserve/forbi.html";
-		set_error_403();
-	}
-}
-
-
-
-void method_get::check_if_method_is_get()
+void method_get::get_allowed()
 {
 	size_t i = 0;
 	while (i < keep.getLocationsVec().size())
 	{
-
 		if (keep.getLocationsVec()[i].getLocation() == url)
 		{
 			if (keep.getLocationsVec()[i].getAcceptedMethods()["GET"] == true)
@@ -183,6 +16,7 @@ void method_get::check_if_method_is_get()
 			}
 			else
 			{
+
 				this->path = "/nfs/homes/abouzanb/Desktop/webserver/webserve/forbi.html";
 				set_error_403();
 				throw std::exception();
@@ -190,10 +24,14 @@ void method_get::check_if_method_is_get()
 		}	
 		i++;
 	}
-	if (i == keep.getLocationsVec().size() || i == 0) {
-		this ->auto_index = keep.getAutoIndex();
-		this->index = keep.getIndex();
-	}
+}
+
+void method_get::check_if_method_is_get()
+{
+	this->get_allowed();
+	this ->auto_index = keep.getAutoIndex();
+	std::cout << this->auto_index << std::endl;
+	this->index = keep.getIndex();
 }
 
 
@@ -220,7 +58,7 @@ void method_get::get_check_path()
 	}
 	else 
 	{
-		this->path = "/nfs/homes/abouzanb/Desktop/workingnow/default_error_pages/401_unauthorized.html";
+		this->path = "/nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/default_error_pages/404_not_found.html";
 		set_error_404();
 	}
 }
@@ -322,9 +160,6 @@ int main()
 		      int b = recv(clientes[i].socket, bu, 1024, 0);
 	    	  bu[b] = '\0';
 		  std::string s = bu;
-          std::ofstream d("./test.txt");
-          d << s;
-
 		  try {
 		  data["path"] = s.substr(4, s.find("HTTP") - 5);
 		  ft_get(a, data["path"], clientes[i]);

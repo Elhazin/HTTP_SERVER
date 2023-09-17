@@ -1,5 +1,33 @@
 #ifndef get_hpp
 #define get_hpp
+
+
+
+#include <iostream>
+#include <unistd.h>
+#include <fcntl.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <cstring>
+#include <sys/stat.h> 
+#include <sys/types.h>
+#include <cstdlib>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <string>
+#include <map>
+#include <sys/socket.h>
+#include <netinet/in.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+#include <sstream>
+#include <signal.h>
+#include <sys/types.h>
+#include <dirent.h>
+#include <libgen.h>
+#include <map>
+#include <netinet/tcp.h> 
 #include <iostream>
 #include <unistd.h>
 #include <fcntl.h>
@@ -68,18 +96,16 @@ class method_get
 	
 	method_get(Directives k, std::string , info &inf);
 	
+    void get_allowed();
 	void check_if_method_is_get();
-	void get_path(std::string route);
 	void get_check_path();
 	void folder_handling();
 	void file_handling();
 	void handle_auto_index();
-	void send_file();
 	void set_error_404();
 	void set_error_403();
 	void send_indexing(DIR *dir);
 };
-
 
 
 #endif

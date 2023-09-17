@@ -12,7 +12,7 @@ SRCS = parse_conf/check_directives.cpp \
 	parse_conf/Directives.cpp \
 	parse_conf/Locations.cpp \
 	parse_conf/Servers.cpp \
-	methods/get.cpp \
+	methods/get.cpp methods/handle_folder.cpp methods/handle_file.cpp methods/send_errors.cpp \
 
 OBJS = $(SRCS:.cpp=.o)
 
