@@ -4,12 +4,12 @@ Directives::Directives()
 {
 	this->serverNames.clear();
 	this->listen.clear();
-	this->errorPages[400] = "/nfs/homes/moel-asr/Desktop/webserv/default_status_code_pages/400_bad_request.html";
-	this->errorPages[401] = "/nfs/homes/moel-asr/Desktop/webserv/default_status_code_pages/401_unauthorized.html";
-	this->errorPages[403] = "/nfs/homes/moel-asr/Desktop/webserv/default_status_code_pages/403_forbidden.html";
-	this->errorPages[404] = "/nfs/homes/moel-asr/Desktop/webserv/default_status_code_pages/404_not_found.html";
-	this->errorPages[500] = "/nfs/homes/moel-asr/Desktop/webserv/default_status_code_pages/500_internal_service_error.html";
-	this->errorPages[503] = "/nfs/homes/moel-asr/Desktop/webserv/default_status_code_pages/503_service_unavailable.html";
+	this->errorPages[400] = "../default_error_pages/400_bad_request.html";
+	this->errorPages[401] = "../default_error_pages/401_unauthorized.html";
+	this->errorPages[403] = "/nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/default_error_pages/403_forbidden.html";
+	this->errorPages[404] = "/nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/default_error_pages/404_not_found.html";
+	this->errorPages[500] = "../default_error_pages/500_internal_service_error.html";
+	this->errorPages[503] = "../default_error_pages/503_service_unavailable.html";
 	this->maxBodySizeInBytes = -1;
 	this->index.clear();
 	this->root = "";

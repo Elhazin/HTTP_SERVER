@@ -1,10 +1,10 @@
-#include "/nfs/homes/abouzanb/Desktop/workingnow/methods/get.hpp"
+#include "get.hpp"
 
 
 
 void method_get::set_error_403()
 {
-    this ->path  = "/nfs/homes/abouzanb/Desktop/webserver/webserve/forbi.html";
+    this ->path  = erros_page[403];
 	this->file = new std::ifstream(path.c_str(),  std::ios::binary);
 	std::stringstream ss ;
 	std::string ext;
@@ -20,9 +20,14 @@ void method_get::set_error_403()
 
 void method_get::set_error_404()
 {
-    this ->path  = "/nfs/homes/abouzanb/Desktop/webserver/webserve/forbi.html";
-	struct stat st;
+	this ->path  =erros_page[404];
 	this->file = new std::ifstream(path.c_str(),  std::ios::binary);
+	if (file->fail())
+	{
+		std::cout << this ->path << std::endl;
+		std::cout << "error" << std::endl;
+	}
+	struct stat st;
 	stat(path.c_str() , &st);
 	this->size = st.st_size;
 	infa.size = st.st_size;

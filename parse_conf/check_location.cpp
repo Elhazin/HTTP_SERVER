@@ -53,6 +53,7 @@ void	checkLocationAcceptedMethods(Locations &location, std::istringstream &iss)
 {
 	std::string method;
 
+
 	while (std::getline(iss, method, ' '))
 	{
 		if (!(isOnlyWhitespaces(method)) && !(method.empty()))
@@ -61,7 +62,8 @@ void	checkLocationAcceptedMethods(Locations &location, std::istringstream &iss)
 			if (method == "GET")
 			{
 				if (location.getAcceptedMethods()["GET"] == true)
-					throw std::runtime_error("The GET method value is alraedy set as accepted method.");
+					throw std
+::runtime_error("The GET method value is alraedy set as accepted method.");
 				location.setAcceptedMethods("GET", true);
 			}
 			else if (method == "POST")

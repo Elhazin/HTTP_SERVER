@@ -22,20 +22,20 @@ void method_get::send_indexing(DIR *dir)
 	file_handling();
 }
 
-void method_get::handle_auto_index()
+void	method_get::handle_auto_index()
 {
-	DIR *dir;
-	if ((dir = opendir(path.c_str())) == NULL)
-	    set_error_404();
+	DIR	*dir;
+	if	((dir = opendir(path.c_str())) == NULL)
+		set_error_404();
 	else
 		send_indexing(dir);
 }
 
-void method_get::folder_handling()
+void	method_get::folder_handling()
 {
-	struct stat st;
-	size_t i = 0;	
-	this->auto_index = true;
+	struct stat	st;
+	size_t	i = 0;	
+
 	while (i < this->index.size())
 	{
 		std::string temp = path;
@@ -50,8 +50,9 @@ void method_get::folder_handling()
 		}
 		i++;
 	}
+	std::cout << "The code reached here" << std::endl;
 	if (this->auto_index == true)
 		handle_auto_index();
 	else
-        set_error_403();
+		set_error_403();
 }

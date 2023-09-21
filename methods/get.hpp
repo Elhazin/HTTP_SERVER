@@ -65,8 +65,10 @@ class info{
 		size = 0;
 		file = NULL;
 		status = 0;
+		anas = 0;
 
 	}
+	int anas;
 	int socket;
 	int size;
 	int readed;
@@ -93,8 +95,9 @@ class method_get
 	std::string url;
 	info &infa;
 	Directives keep;
+	std::map<int , std::string> erros_page;
 	
-	method_get(Directives k, std::string , info &inf);
+	method_get(Directives k, std::string l, info &inf);
 	
     void get_allowed();
 	void check_if_method_is_get();

@@ -2,7 +2,8 @@
 
 void method_get::file_handling()
 {
-	this->file = new std::ifstream(path.c_str());
+
+	this->file = new std::ifstream(path.c_str(), std::ios::binary);
 	std::stringstream ss ;
 	std::string ext;
 	size_t i = path.find_last_of(".");
