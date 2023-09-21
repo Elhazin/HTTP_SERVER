@@ -53,7 +53,7 @@
 #include <libgen.h>
 #include <map>
 #include <netinet/tcp.h>
-#include   "/nfs/homes/abouzanb/Desktop/workingnow/includes/Servers.hpp"
+#include   "/nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/includes/Servers.hpp"
 #include "../includes/conf_parser.hpp"
 
 class info{
@@ -108,6 +108,8 @@ class method_get
 	void set_error_404();
 	void set_error_403();
 	void send_indexing(DIR *dir);
+	void check_location();
+	void set_error_500();
 };
 
 

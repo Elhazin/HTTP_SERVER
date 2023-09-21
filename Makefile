@@ -17,8 +17,9 @@ SRCS = parse_conf/check_directives.cpp \
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
+dep = /nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/conf/default.conf
 
-$(NAME): $(OBJS)
+$(NAME): $(OBJS) $(dep)
 	$(CPP) $(CPPFLAGS) $(OBJS) -o $(NAME)
 
 clean:

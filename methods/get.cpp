@@ -1,47 +1,18 @@
 #include "get.hpp"
 #define P 8080
  
-void method_get::get_allowed()
-{
-	size_t i = 0;
-	while (i < keep.getLocationsVec().size())
-	{
-		if (keep.getLocationsVec()[i].getLocation() == url)
-		{
-			if (keep.getLocationsVec()[i].getAcceptedMethods()["GET"] == true)
-			{
-				this->auto_index = keep.getLocationsVec()[i].getAutoIndex();
-				this->index = keep.getLocationsVec()[i].getIndex();
-				return ;
-			}
-			else
-			{
-				set_error_403();
-				throw std::exception();
-			}
-		}	
-		i++;
-	}
-}
 
-void method_get::check_if_method_is_get()
-{
-	this->get_allowed();
-	this ->auto_index = keep.getAutoIndex();
-	std::cout << this->auto_index << std::endl;
-	this->index = keep.getIndex();
-}
-
-void check_location()
+void method_get::check_location()
 {
 	size_t i = 0;
 	int max_lenght = 0;
 	int size = 0;
 	while (i < keep.getLocationsVec().size())
 	{
-		size = keep.getLocationsVec()[i].getLocation().size();
-		if (keep.getLocationsVec()[i].getLocation().size() >= url.size() && keep.getLocationsVec()[i].getLocation() == url.substr(0, size) && size > max_lenght)
+		size = keep.getLocationsVec()[i].getLocation().size() ;
+		if (keep.getLocationsVec()[i].getLocation() == url.substr(0, size) && size >= max_lenght)
 		{
+			std::cout << "url " << url << std::endl << "location " << keep.getLocationsVec()[i].getLocation() << std::endl << "size " << size << std::endl << "max_lenght " << max_lenght << std::endl;
 			max_lenght = size;
 			this->auto_index = keep.getLocationsVec()[i].getAutoIndex();
 			this->index = keep.getLocationsVec()[i].getIndex();
@@ -70,21 +41,18 @@ void method_get::get_check_path()
 	if (stat(path.c_str() , &st) == 0)
 	{
 		try{
+		
 			check_location();
 			this->size = st.st_size;
 			infa.size = st.st_size;
 			if (S_ISDIR(st.st_mode))
-			{
-				
-				check_if_method_is_get();
 				folder_handling();
-				
-			}
 			else
 				file_handling();
 		}
 		catch (const std::exception& e)
 		{
+			return ;
 		}
 	}
 	else 
@@ -99,6 +67,7 @@ method_get::method_get(Directives k , std::string url, info &inf) : infa(inf)
 	this->keep = k;
 	std::string route = k.getRoot();
 	this->path = route + url;
+	auto_index = k.getAutoIndex();
 	this->url = url;
 	infa.path = path;
 	this->erros_page = k.getErrorPages();
@@ -116,6 +85,7 @@ method_get::method_get(Directives k , std::string url, info &inf) : infa(inf)
 	extansion_handling[".txt"] = moth + "Content-Type: text/plain\nContent-Length: ";
 	extansion_handling["404"] = "HTTP/1.1 404 Not Found\nContent-Type: text/html\nContent-Length: ";
 	extansion_handling["403"] = "HTTP/1.1 403 Forbidden\nContent-Type: text/html\nContent-Length: ";
+	extansion_handling["500"] = "HTTP/1.1 500 Internal Server Error\nContent-Type: text/html\nContent-Length: ";
 	get_check_path();
 }
 
@@ -125,7 +95,7 @@ void ft_get(Directives data, std::string url,  info &socket)
 	method_get get(data,url,  socket);
 }
 
-void close_socket(std::vector<int> &clients, int& i , fd_set &writefds)
+void close_socket(std::vector<info> &clientes, size_t& i , fd_set &writefds)
 {
 		clientes[i].file->close();
 		FD_CLR(clientes[i].socket, &writefds);
@@ -134,7 +104,7 @@ void close_socket(std::vector<int> &clients, int& i , fd_set &writefds)
 		clientes.erase(clientes.begin() + i);
 }
 
-void get_response(std::vector<int> &clients, int& i , fd_set &writefds)
+void get_response(std::vector<info> &clientes, size_t& i , fd_set &writefds)
 {
 	char bu[1025];
 	if (!clientes[i].file->eof())
@@ -143,7 +113,7 @@ void get_response(std::vector<int> &clients, int& i , fd_set &writefds)
 		{
 			if (send(clientes[i].socket, clientes[i].buffer_to_send.c_str(), clientes[i].buffer_to_send.size(), 0) <= 0)
 			{
-				close_socket(clients, i, writefds);
+				close_socket(clientes, i, writefds);
 				return ;
 			}
 			clientes[i].status = 0;
@@ -152,28 +122,27 @@ void get_response(std::vector<int> &clients, int& i , fd_set &writefds)
 		int count = clientes[i].file->gcount();
 		if (count <= 0)
 		{
-			close_socket(clients, i, writefds);
+			close_socket(clientes, i, writefds);
 			return ;
 		}
 		if (send(clientes[i].socket, bu, count, 0) <= 0)
 		{
-			close_socket(clients, i, writefds);
+			close_socket(clientes, i, writefds);
 			return ;
 		}		
 	}
 	else
-		close_socket(clients, i, writefds);
+		close_socket(clientes, i, writefds);
 }
 
 int main()
-{ 
-        std::cout << "akojha   aloha "<< std::endl;
+{
 	try {
-	std::ifstream conf("/nfs/homes/abouzanb/Desktop/workingnow/conf/default.conf");
-		Servers 	servers;
-		skipEmptyLinesAndCheckServerBlock(conf, true, servers);
-		parse_servers(servers);
-	int sending = 0;
+        std::cout << "akojha   aloha "<< std::endl;
+	std::ifstream conf("/nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/conf/default.conf");
+	Servers 	servers;
+	skipEmptyLinesAndCheckServerBlock(conf, true, servers);
+	parse_servers(servers);
     Directives a = servers.getServersVec()[0];
 	char bu[1024];
 	std::map<std::string, std::string> data;
@@ -228,83 +197,35 @@ int main()
 	{
 		if (FD_ISSET(clientes[i].socket, &temp_read))
 		{
-			if (clientes[i].anas == 1)
-			{
-			std::cout << "reading" << std::endl;
-				FD_CLR(clientes[i].socket, &readfds);
-				FD_CLR(clientes[i].socket, &temp_read);
-				continue ;
-			}
             char bu[1025];
-		      int b = recv(clientes[i].socket, bu, 1024, 0);
-	    	  bu[b] = '\0';
-		  std::string s;
-		  s = bu;
-		  try {
-		  data["path"] = s.substr(4, s.find("HTTP") - 5);
-		  std::cout << i << std::endl;
-		  ft_get(a, data["path"], clientes[i]);
-		  clientes[i].anas = 1;
-		  FD_CLR(clientes[i].socket, &readfds);
-		  FD_CLR(clientes[i].socket, &temp_read);
-		  }
-		  catch (std::exception &r){
-			FD_CLR(clientes[i].socket, &readfds);
-				clientes[i].file->close();
-			  	FD_CLR(clientes[i].socket, &writefds);
-				close(clientes[i].socket);
-				delete clientes[i].file;
-			  	clientes.erase(clientes.begin() + i);
-		  }
+		    int b = recv(clientes[i].socket, bu, 1024, 0);
+	    	bu[b] = '\0';
+			std::string s;
+		  	s = bu;
+		 	try {
+		  			data["path"] = s.substr(4, s.find("HTTP") - 5);
+		 			std::cout << i << std::endl;
+		  			ft_get(a, data["path"], clientes[i]);
+		  			FD_CLR(clientes[i].socket, &readfds);
+		  			FD_CLR(clientes[i].socket, &temp_read);
+		  			FD_SET(clientes[i].socket, &writefds);
+				}
+			catch (std::exception &r){
+			close_socket(clientes, i, readfds);
+		  	}
 
 		}
 		else if (FD_ISSET(clientes[i].socket, &temp_write))
 		{
 			bzero(bu,sizeof(bu));
-			if (!clientes[i].file->is_open())
-			{
-				clientes[i].file = new std::ifstream(clientes[i].path.c_str(), std::ios::binary);
-			}
-			get_response(clientes, i, writefds, sending, bu)
-			if (!clientes[i].file->eof())
-			{
-				if (clientes[i].status == 1)
-				{
-					send(clientes[i].socket, clientes[i].buffer_to_send.c_str(), clientes[i].buffer_to_send.size(), 0);
-					clientes[i].status = 0;
-				}
-
-				std::cout << "sending" << std::endl;
-				clientes[i].file->read(bu, 1024);
-				int count = clientes[i].file->gcount();
-				int sended = send(clientes[i].socket, bu, count, 0);
-				if (sended <= 0)
-				{
-					clientes[i].file->close();
-					FD_CLR(clientes[i].socket, &writefds);
-					close(clientes[i].socket);
-					clientes.erase(clientes.begin() + i);
-				}
-				sending += sended;
-				clientes[i].readed += count;
-				
-			}
-			else 
-			{
-				std::cout << "closing" << std::endl;
-				clientes[i].file->close();
-			  	FD_CLR(clientes[i].socket, &writefds);
-				close(clientes[i].socket);
-				delete clientes[i].file;
-			  	clientes.erase(clientes.begin() + i);
-
-			}
+			get_response(clientes, i, writefds);
 		}
 	}
 	}
 	}
-	catch (const std::exception& e)
+	catch (std::exception &e)
 	{
-		std::cerr << e.what() << '\n';
+		std::cout << e.what() << std::endl;
 	}
+
 }
