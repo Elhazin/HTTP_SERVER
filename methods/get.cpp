@@ -121,17 +121,19 @@ void close_socket(std::vector<info> &clientes, size_t& i , fd_set &writefds)
 void get_response(std::vector<info> &clientes, size_t& i , fd_set &writefds)
 {
 	char bu[1025];
+	if (clientes[i].status == 1)
+	{
+		std::cout << "sending data" << std::endl;
+		if (send(clientes[i].socket, clientes[i].buffer_to_send.c_str(), clientes[i].buffer_to_send.size(), 0) <= 0)
+		{
+			std::cout  <<"FAILED TO SEND" << std::endl;
+			close_socket(clientes, i, writefds);
+			return ;
+		}
+			clientes[i].status = 0;
+	}
 	if (clientes[i].file &&  !clientes[i].file->eof())
 	{
-		if (clientes[i].status == 1)
-		{
-			if (send(clientes[i].socket, clientes[i].buffer_to_send.c_str(), clientes[i].buffer_to_send.size(), 0) <= 0)
-			{
-				close_socket(clientes, i, writefds);
-				return ;
-			}
-			clientes[i].status = 0;
-		}
 		clientes[i].file->read(bu, 1024);
 		int count = clientes[i].file->gcount();
 		if (count <= 0)
