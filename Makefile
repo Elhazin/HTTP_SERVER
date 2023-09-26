@@ -12,14 +12,15 @@ SRCS = parse_conf/check_directives.cpp \
 	parse_conf/Directives.cpp \
 	parse_conf/Locations.cpp \
 	parse_conf/Servers.cpp \
-	methods/get.cpp methods/handle_folder.cpp methods/handle_file.cpp methods/send_errors.cpp \
+	methods/get.cpp methods/handle_file.cpp methods/send_errors.cpp methods/handle_folder.cpp  methods/delete.cpp 
 
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
-dep = /nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/conf/default.conf
 
-$(NAME): $(OBJS) $(dep)
+CONF = /nfs/homes/abouzanb/Desktop/webservee/conf/default.conf
+
+$(NAME): $(OBJS) $(CONF)
 	$(CPP) $(CPPFLAGS) $(OBJS) -o $(NAME)
 
 clean:

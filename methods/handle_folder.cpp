@@ -1,4 +1,14 @@
+/*
+ * Filename: /nfs/homes/abouzanb/Desktop/webservee/methods/handle_folder.cpp
+ * Path: /nfs/homes/abouzanb
+ * Created Date: Thursday, January 1st 1970, 12:00:00 am
+ * Author: Anas Bouzanbil
+ * 
+ * Copyright (c) 2023 Your Company
+ */
+
 #include "get.hpp"
+
 
 void method_get::send_indexing(DIR *dir)
 {
@@ -9,10 +19,9 @@ void method_get::send_indexing(DIR *dir)
         std::cout << "error in opening file" << std::endl;
         return ; 
     }
-	fill << "<html>\n<head>\n<title>Index of /</title>\n</head>\n<body bgcolor=\"white\">\n<h1>Index of /</h1><hr><pre>\n";
-
-	while ((dp = readdir(dir)) != NULL)
-        fill << "<a href=\"" << dp->d_name << "\">" << dp->d_name << "</a>\n";
+	fill << "<html>\n<head>\n<title>Index of " << url << "</title>\n <style> body {background-color: Cyan; font-size: 14px}</style>\n</head>\n<body>\n<h1>Index of " << url << "</h1>\n<hr>\n<pre>\n";
+ 	while ((dp = readdir(dir)) != NULL)
+        fill << "<a href=\"" << url + dp->d_name << "\">" << dp->d_name << "</a>\n";
 	fill << "</pre><hr>\n</body>\n</html>\n";
 	closedir(dir);
 	fill.close();
@@ -22,6 +31,7 @@ void method_get::send_indexing(DIR *dir)
 
 void	method_get::handle_auto_index()
 {
+
 	DIR	*dir;
 	if	((dir = opendir(path.c_str())) == NULL)
 		set_error_404();
@@ -33,9 +43,9 @@ void	method_get::folder_handling()
 {
 	struct stat	st;
 	size_t	i = 0;	
-
 	while (i < this->index.size())
 	{
+		std::cout << "index : " << index[i] << std::endl;
 		std::string temp = path;
 		temp += index[i];
 		if (stat(temp.c_str() , &st) == 0)

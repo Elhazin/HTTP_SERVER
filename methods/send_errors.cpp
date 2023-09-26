@@ -16,6 +16,8 @@ void method_get::set_error_500()
 
 void	method_get::set_error_403()
 {
+	struct stat st;
+
 	this ->path  = erros_page[403];
 	this->file = new std::ifstream(path.c_str(),  std::ios::binary);
 	if (!file->is_open())
@@ -23,6 +25,10 @@ void	method_get::set_error_403()
 		this->set_error_500();
 		return	;
 	}
+	stat(path.c_str() , &st);
+
+	this->size = st.st_size;
+	infa.size = st.st_size;
 	std::stringstream ss ;
 	std::string ext;
 	ext = extansion_handling["403"];
@@ -42,6 +48,7 @@ void	method_get::set_error_404()
 	this->file = new std::ifstream(path.c_str(),  std::ios::binary);
 	if (!file->is_open())
 	{
+		std::cout << "error 500" << std::endl;
 		this->set_error_500();
 		return	;
 	}

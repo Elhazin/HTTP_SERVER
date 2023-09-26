@@ -6,11 +6,11 @@ void	parse_servers(Servers &servers)
 	size_t serversSize = serversVec.size();
 
 	for (size_t i = 0; i < serversSize; i++) {
-		if (serversVec[i].getServerNames().empty())
+		if (serversVec[i].getServerName() == "")
 			serversVec[i].setServerName("localhost");
-		if (serversVec[i].getListen().empty())
+		if (serversVec[i].getListen() == -1)
 			throw std::runtime_error("The listen directive doesn't exist.");
-		else if (serversVec[i].getMaxBodySizeInBytes() == -1)
+		if (serversVec[i].getMaxBodySizeInBytes() == -1)
 			throw std::runtime_error("The client max body size directive doesn't exist.");
 		else if (serversVec[i].getRoot() == "")
 			throw std::runtime_error("The root directive doesn't exist.");

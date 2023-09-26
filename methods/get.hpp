@@ -2,6 +2,7 @@
 #define get_hpp
 
 
+#include <sys/wait.h>
 
 #include <iostream>
 #include <unistd.h>
@@ -53,7 +54,7 @@
 #include <libgen.h>
 #include <map>
 #include <netinet/tcp.h>
-#include   "/nfs/homes/abouzanb/Desktop/HTTP_SERVER/HTTP_SERVER/includes/Servers.hpp"
+#include   "/nfs/homes/abouzanb/Desktop/webservee/includes/Servers.hpp"
 #include "../includes/conf_parser.hpp"
 
 class info{
@@ -61,17 +62,12 @@ class info{
 	info(int sock)
 	{
 		socket = sock;
-		readed = 0;
 		size = 0;
 		file = NULL;
 		status = 0;
-		anas = 0;
-
 	}
-	int anas;
 	int socket;
 	int size;
-	int readed;
 	int status;
 	std::string path;
 	std::string containte;
@@ -81,7 +77,7 @@ class info{
 
 class method_get
 {
-	private :
+	protected:
 	std::map<std::string, std::string> map;
 	std::map<std::string, std::string> extansion_handling;
 	std::string path;
@@ -96,20 +92,29 @@ class method_get
 	info &infa;
 	Directives keep;
 	std::map<int , std::string> erros_page;
-	
+	std::string location;
 	method_get(Directives k, std::string l, info &inf);
-	
-    void get_allowed();
-	void check_if_method_is_get();
 	void get_check_path();
 	void folder_handling();
 	void file_handling();
 	void handle_auto_index();
 	void set_error_404();
-	void set_error_403();
-	void send_indexing(DIR *dir);
-	void check_location();
 	void set_error_500();
+	void set_error_403();
+	void check_location();
+	void send_indexing(DIR *dir);
+};
+
+class ft_delete : public method_get
+{
+
+    public :
+    ft_delete(Directives k, std::string l, info &inf);
+    void location_check();
+    void remove_them(std::string path);
+    void check_stat();
+    void remove_file(std::string path);
+    void remove_folder(std::string path);
 };
 
 

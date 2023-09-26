@@ -1,48 +1,61 @@
 #include "get.hpp"
-#define P 8080
+#define P 8081
  
 
 void method_get::check_location()
 {
+	int forbidden = 0;
 	size_t i = 0;
 	int max_lenght = 0;
 	int size = 0;
+	int is_checked = 0;
 	while (i < keep.getLocationsVec().size())
 	{
-		size = keep.getLocationsVec()[i].getLocation().size() ;
+		size = keep.getLocationsVec()[i].getLocation().size();
 		if (keep.getLocationsVec()[i].getLocation() == url.substr(0, size) && size >= max_lenght)
 		{
-			std::cout << "url " << url << std::endl << "location " << keep.getLocationsVec()[i].getLocation() << std::endl << "size " << size << std::endl << "max_lenght " << max_lenght << std::endl;
-			max_lenght = size;
-			this->auto_index = keep.getLocationsVec()[i].getAutoIndex();
-			this->index = keep.getLocationsVec()[i].getIndex();
-			this->route = keep.getLocationsVec()[i].getRoot();
 			if (keep.getLocationsVec()[i].getAcceptedMethods()["GET"] == true)
 			{
+				max_lenght = size;
 				this->auto_index = keep.getLocationsVec()[i].getAutoIndex();
 				this->index = keep.getLocationsVec()[i].getIndex();
-				return ;
+				this->route = keep.getLocationsVec()[i].getRoot();
+				path = route + url.substr(size, url.size());
+				is_checked = 1;
+				forbidden = 0;
 			}
 			else
-			{
-				set_error_403();
-				throw std::exception();
-			}
+				forbidden = 1;
 		}
 		i++;
 	}
-	set_error_404();
-	throw std::exception();
+	if (forbidden == 1)
+	{
+		set_error_403();
+		throw std::exception();
+	}
+	if (is_checked == 0)
+	{
+		set_error_404();
+		throw std::exception();
+	}
 }
 
 void method_get::get_check_path()
 {
 	struct stat st;
+	try {
+	check_location();
+	}
+	catch (std::exception &e)
+	{
+		return ;
+	}
+	std::cout << "path: " << path << std::endl;
 	if (stat(path.c_str() , &st) == 0)
 	{
 		try{
 		
-			check_location();
 			this->size = st.st_size;
 			infa.size = st.st_size;
 			if (S_ISDIR(st.st_mode))
@@ -86,28 +99,29 @@ method_get::method_get(Directives k , std::string url, info &inf) : infa(inf)
 	extansion_handling["404"] = "HTTP/1.1 404 Not Found\nContent-Type: text/html\nContent-Length: ";
 	extansion_handling["403"] = "HTTP/1.1 403 Forbidden\nContent-Type: text/html\nContent-Length: ";
 	extansion_handling["500"] = "HTTP/1.1 500 Internal Server Error\nContent-Type: text/html\nContent-Length: ";
-	get_check_path();
 }
 
 
 void ft_get(Directives data, std::string url,  info &socket)
 {
 	method_get get(data,url,  socket);
+	get.get_check_path();
 }
 
 void close_socket(std::vector<info> &clientes, size_t& i , fd_set &writefds)
 {
+	if (clientes[i].file)
 		clientes[i].file->close();
-		FD_CLR(clientes[i].socket, &writefds);
-		close(clientes[i].socket);
-		delete clientes[i].file;
-		clientes.erase(clientes.begin() + i);
+	FD_CLR(clientes[i].socket, &writefds);
+	close(clientes[i].socket);
+	delete clientes[i].file;
+	clientes.erase(clientes.begin() + i);
 }
 
 void get_response(std::vector<info> &clientes, size_t& i , fd_set &writefds)
 {
 	char bu[1025];
-	if (!clientes[i].file->eof())
+	if (clientes[i].file &&  !clientes[i].file->eof())
 	{
 		if (clientes[i].status == 1)
 		{
@@ -178,7 +192,7 @@ int main()
 
 	 if (ret < 0)
 	 {
-		 std::cout << "error" << std::endl;
+		 std::cout << "error select" << std::endl;
 		 exit(1);
 	 }
 	 if (FD_ISSET(server, &temp_read))
@@ -203,15 +217,30 @@ int main()
 			std::string s;
 		  	s = bu;
 		 	try {
+					//check which methid is it
+					if (s.find("GET") == 0)
+					{
 		  			data["path"] = s.substr(4, s.find("HTTP") - 5);
-		 			std::cout << i << std::endl;
-		  			ft_get(a, data["path"], clientes[i]);
-		  			FD_CLR(clientes[i].socket, &readfds);
+		  				ft_get(a, data["path"], clientes[i]);
+					}
+					else if (s.find("DELETE") == 0)
+					{
+						try {
+						data["path"] = s.substr(7, s.find("HTTP") - 8);								
+						ft_delete(a, data["path"], clientes[i]);
+						}
+						catch (std::exception &e)
+						{
+							std::cout << "error ft_delete   : " << e.what() << std::endl; 
+						}
+					
+					}
+					FD_CLR(clientes[i].socket, &readfds);
 		  			FD_CLR(clientes[i].socket, &temp_read);
 		  			FD_SET(clientes[i].socket, &writefds);
 				}
 			catch (std::exception &r){
-			close_socket(clientes, i, readfds);
+			// close_socket(clientes, i, readfds);
 		  	}
 
 		}
