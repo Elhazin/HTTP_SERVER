@@ -104,30 +104,34 @@ method_get::method_get(Directives k , std::string url, info &inf) : infa(inf)
 
 void ft_get(Directives data, std::string url,  info &socket)
 {
+	// if (socket.was_read == 1)
+	// 	return ;
 	method_get get(data,url,  socket);
 	get.get_check_path();
+	socket.was_read = 1;
 }
 
-void close_socket(std::vector<info> &clientes, size_t& i , fd_set &writefds)
+void close_socket(std::vector<info> &clientes, size_t& i , fd_set &writefds, fd_set &readfds)
 {
 	if (clientes[i].file)
 		clientes[i].file->close();
 	FD_CLR(clientes[i].socket, &writefds);
+	FD_CLR(clientes[i].socket, &readfds);
 	close(clientes[i].socket);
 	delete clientes[i].file;
 	clientes.erase(clientes.begin() + i);
 }
 
-void get_response(std::vector<info> &clientes, size_t& i , fd_set &writefds)
+void get_response(std::vector<info> &clientes, size_t& i , fd_set &writefds, fd_set &readfds)
 {
 	char bu[1025];
 	if (clientes[i].status == 1)
 	{
-		std::cout << "sending data" << std::endl;
+		std::cout << "|||"<< clientes[i].buffer_to_send << "|| "<< std::endl;
 		if (send(clientes[i].socket, clientes[i].buffer_to_send.c_str(), clientes[i].buffer_to_send.size(), 0) <= 0)
 		{
 			std::cout  <<"FAILED TO SEND" << std::endl;
-			close_socket(clientes, i, writefds);
+			close_socket(clientes, i, writefds , readfds);
 			return ;
 		}
 			clientes[i].status = 0;
@@ -138,17 +142,17 @@ void get_response(std::vector<info> &clientes, size_t& i , fd_set &writefds)
 		int count = clientes[i].file->gcount();
 		if (count <= 0)
 		{
-			close_socket(clientes, i, writefds);
+			close_socket(clientes, i, writefds , readfds);
 			return ;
 		}
 		if (send(clientes[i].socket, bu, count, 0) <= 0)
 		{
-			close_socket(clientes, i, writefds);
+			close_socket(clientes, i, writefds , readfds);
 			return ;
 		}		
 	}
 	else
-		close_socket(clientes, i, writefds);
+		close_socket(clientes, i, writefds , readfds);
 }
 
 int main()
@@ -215,6 +219,11 @@ int main()
 		{
             char bu[1025];
 		    int b = recv(clientes[i].socket, bu, 1024, 0);
+			if (b <= 0)
+			{
+				close_socket(clientes, i, writefds , readfds);
+				continue ;
+			}
 	    	bu[b] = '\0';
 			std::string s;
 		  	s = bu;
@@ -237,9 +246,6 @@ int main()
 						}
 					
 					}
-					FD_CLR(clientes[i].socket, &readfds);
-		  			FD_CLR(clientes[i].socket, &temp_read);
-		  			FD_SET(clientes[i].socket, &writefds);
 				}
 			catch (std::exception &r){
 			// close_socket(clientes, i, readfds);
@@ -249,7 +255,7 @@ int main()
 		else if (FD_ISSET(clientes[i].socket, &temp_write))
 		{
 			bzero(bu,sizeof(bu));
-			get_response(clientes, i, writefds);
+			get_response(clientes, i, writefds, readfds);
 		}
 	}
 	}

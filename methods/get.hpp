@@ -64,8 +64,10 @@ class info{
 		socket = sock;
 		size = 0;
 		file = NULL;
-		status = 0;
+		status = 1;
+		was_read = 0;
 	}
+	int was_read;
 	int socket;
 	int size;
 	int status;
