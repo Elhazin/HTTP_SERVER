@@ -26,7 +26,7 @@ void removeWhitespaces(std::string& str)
         if (std::isspace(*it))
             it = str.erase(it);
 		else
-        	it++;
+			it++;
     }
 }
 
@@ -131,11 +131,9 @@ void	splitString(const std::string& str, std::vector<std::string>& result)
     result.clear();
     
 	substring = "";
-	if (str[0] == ':' || str[str.length() - 1] == ':')
-		throw std::runtime_error("The listen directive syntax is invalid.");
-    for (unsigned int i = 0; i < str.size(); i++)
+    for (size_t i = 0; i < str.size(); i++)
 	{
-        if (str[i] == ':')
+        if (str[i] == ' ')
 		{
 			result.push_back(substring);
 			substring = "";
@@ -145,8 +143,6 @@ void	splitString(const std::string& str, std::vector<std::string>& result)
     }
 	if (!substring.empty())
         result.push_back(substring);
-	if (result.size() != 2)
-		throw std::runtime_error("The listen directive syntax is invalid.");
 }
 
 bool	isNum(const std::string& str)

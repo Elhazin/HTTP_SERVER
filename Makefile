@@ -12,16 +12,26 @@ SRCS = parse_conf/check_directives.cpp \
 	parse_conf/Directives.cpp \
 	parse_conf/Locations.cpp \
 	parse_conf/Servers.cpp \
-	methods/get.cpp methods/handle_file.cpp methods/send_errors.cpp methods/handle_folder.cpp  methods/delete.cpp 
+	Multiplexing/create_listening_socket.cpp \
+	Multiplexing/run_server.cpp \
+	Multiplexing/helper_functions.cpp \
+	Request/POST/ft_Post.cpp \
+	methods/get.cpp \
+	methods/delete.cpp \
+	methods/send_errors.cpp \
+	methods/handle_file.cpp \
+	methods/handle_folder.cpp \
+	main.cpp
 
 OBJS = $(SRCS:.cpp=.o)
 
 all: $(NAME)
 
-CONF = /nfs/homes/abouzanb/Desktop/webservee/conf/default.conf
-
-$(NAME): $(OBJS) $(CONF)
+$(NAME): $(OBJS)
 	$(CPP) $(CPPFLAGS) $(OBJS) -o $(NAME)
+
+%.o: %.cpp
+	$(CPP) $(CPPFLAGS) -c $< -o $@
 
 clean:
 	rm -f $(OBJS)

@@ -25,42 +25,60 @@ t_client_info	*get_client(int s, t_client_info **clients)
 	return (newClient);
 }
 
-void	drop_client(t_client_info *client, t_client_info **clients)
+void	drop_client(t_client_info *client, t_client_info **clients, fd_set &reads, fd_set &writes)
 {
-	close(client->socket);
 	t_client_info **p = clients;
 	while(*p)
 	{
 		if (*p == client)
 		{
 			*p = client->next;
-			free(client);
-			return ;
+			break ;
 		}
 		p = &(*p)->next;
 	}
-	throw std::runtime_error("Client not found.");
+	FD_CLR(client->socket, &reads); // remove client from read set
+	FD_CLR(client->socket, &writes); // remove client from write set
+	close(client->socket); // close socket
+	delete client; // free client memory
+	//throw std::runtime_error("Client not found.");
 }
 
-void wait_on_clients(int server, t_client_info **clients, fd_set &reads, fd_set &writes)
+void wait_on_clients(int &maxSocket, t_client_info **clients, fd_set &reads, fd_set &writes, fd_set &tempReads, fd_set &tempWrites)
 {
-	t_client_info	*client;
-	int				max_socket;
+	t_client_info	*client = *clients;
 	int				result;
 
-	max_socket = server;
-	client = *clients;
+	FD_ZERO(&tempReads);
+	FD_ZERO(&tempWrites);
 
 	while (client)
 	{
-		FD_SET(client->socket, &reads);
-		FD_SET(client->socket, &writes);
-		if (client->socket > max_socket)
-			max_socket = client->socket;
+		if (!FD_ISSET(client->socket, &reads))
+			FD_SET(client->socket, &reads);
+
+		if (client->socket > maxSocket)
+			maxSocket = client->socket;
 		client = client->next;
 	}
 
-	result = select(max_socket + 1, &reads, &writes, NULL, NULL);
+	for (int i = 0; i < FD_SETSIZE; i++)
+	{
+		if (FD_ISSET(i, &reads))
+			FD_SET(i, &tempReads);
+		if (FD_ISSET(i, &writes))
+			FD_SET(i, &tempWrites);
+	}
+
+	result = select(maxSocket + 1, &tempReads, &tempWrites, NULL, NULL);
 	if (result == -1)
 		throw std::runtime_error("select failed with an error.");
+}
+
+std::string	get_client_address(t_client_info *client)
+{
+	char address_buffer[NI_MAXHOST];
+
+	getnameinfo((struct sockaddr*)&client->address, client->address_length, address_buffer, sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
+	return (std::string(address_buffer));
 }
