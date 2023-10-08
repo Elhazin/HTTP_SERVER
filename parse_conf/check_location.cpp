@@ -117,9 +117,29 @@ void	checkLocationCgi(Locations &location, std::istringstream &iss)
 	if (result.size() != 2)
 		throw std::runtime_error("The location cgi directive syntax is invalid.");
 	if ((result[0] != ".py" || result[1] != "/bin/python3") && \
-			(result[0] != ".php" || result[1] != "/bin/php"))
+			(result[0] != ".php" || result[1] != "/usr/bin/php")) //here change to /usr/bin/php
 		throw std::runtime_error("The location cgi directive is not valid.");
 	location.setCgi(result[0], result[1]);
+}
+
+void	checkLocationCgiAllowed(Locations &location, std::istringstream &iss)
+{
+	std::string value;
+
+	if (location.getCgiAllowed())
+		throw std::runtime_error("The location cgi-allowed directive already exists.");
+	std::getline(iss, value);
+	if (value.empty() || isOnlyWhitespaces(value))
+		throw std::runtime_error("The location cgi-allowed directive is empty or contains only whitespaces.");
+	value = trimSpaces(value);
+	if (containsWhitespace(value))
+		throw std::runtime_error("The location cgi-allowed value contains whitespaces.");
+	if (value == "on" || value == "ON")
+		location.setCgiAllowed(true);
+	else if (value == "off" || value == "OFF")
+		location.setCgiAllowed(false);
+	else
+		throw std::runtime_error("The location cgi-allowed value is not valid.");
 }
 
 void	checkLocationReturn(Locations &location, std::istringstream &iss)
@@ -134,10 +154,6 @@ void	checkLocationReturn(Locations &location, std::istringstream &iss)
 	value = trimSpaces(value);
 	if (containsWhitespace(value))
 		throw std::runtime_error("The location return directive contains whitespaces.");
-	for (std::string::const_iterator it = value.begin(); it != value.end(); ++it) {
-        if (!std::isalnum(*it) && (*it) != '/')
-            throw std::runtime_error("The location return directive contains a non alphanum character.");
-    }
 	location.setReturn(value);
 }
 
@@ -170,6 +186,8 @@ void	checkLocation(Locations &location, std::istringstream &iss, std::string dir
 		checkLocationAcceptedMethods(location, iss);
 	else if (directive == "return")
 		checkLocationReturn(location, iss);
+	else if (directive == "cgi-allowed")
+		checkLocationCgiAllowed(location, iss);
 	else if (directive == "cgi")
 		checkLocationCgi(location, iss);
 	else if (directive == "upload_store")

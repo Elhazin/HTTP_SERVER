@@ -24,10 +24,10 @@
 #include "../../Multiplexing/multiplexing.hpp"
 
 int ft_my_Post(t_client_info *client);
-std::string* get_body();
-void response(ssize_t csock_fd);
-std::string& grab_path(std::string& req);
-std::string* handle_cgi();
+std::string* get_body(t_client_info *client, Directives &working);
+void response(t_client_info* client, std::vector<int> clientSockets, std::vector<Directives> &servers);
+std::string grab_path(std::string& req);
+std::string* handle_cgi(t_client_info *client, Directives& working, int flag);
 size_t hextodec(const char *s);
 ssize_t get_length(std::string& req);
 void handle_content_length(t_client_info* client ,std::string& req_body, int binary_data_start);
