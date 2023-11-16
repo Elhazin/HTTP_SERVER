@@ -1,6 +1,6 @@
 # HTTP_SERVER
 
-This project nvolves the creation of an [HTTP server](https://en.wikipedia.org/wiki/Web_server) from scratch using C++ and C.
+This project involves the creation of an [HTTP server](https://en.wikipedia.org/wiki/Web_server) from scratch using C++ and C.
 
 <p align="center">
   <img src="https://media.geeksforgeeks.org/wp-content/uploads/20190927155217/webserver.png" width="500">
